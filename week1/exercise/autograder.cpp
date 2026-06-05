@@ -12,7 +12,7 @@ string solve(int n, vector<long long> a) {
     // TODO: Fill this function.
     // Return one of: "Player 1" or "Player 2" or "Draw"
 string solve(int n, vector<long long> a) {
-    long long c = 0, m = 0;
+    int c = 0, m = 0;
     int j = 0;
 
     while (j < n) {
