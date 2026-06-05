@@ -11,7 +11,32 @@ using namespace std;
 string solve(int n, vector<long long> a) {
     // TODO: Fill this function.
     // Return one of: "Player 1" or "Player 2" or "Draw"
+string solve(int n, vector<long long> a) {
+    long long c = 0, m = 0;
+    int j = 0;
 
+    while (j < n) {
+        if (a[j + 1] > 0) {
+            c = c + a[j] + a[j + 1];
+            j += 2;
+        } else {
+            c = c + a[j];
+            j++;
+        }
+
+        if (a[j + 1] > 0) {
+            m = m + a[j] + a[j + 1];
+            j += 2;
+        } else {
+            m = m + a[j];
+            j++;
+        }
+    }
+
+    if (c > m) return "Player 1";
+    if (c == m) return "Draw";
+    else return "Player 2";
+}
     return "";
 }
 
