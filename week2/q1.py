@@ -76,25 +76,56 @@ class History:
     def is_win(self):
         # check if the board position is a win for either players
         # Feel free to implement this in anyway if needed
+            winning_lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+            ]
+      for line in winning_lines:
+      a, b, c = line  
+      if self.board[a] != '0' and self.board[a] == self.board[b] == self.board[c]:
+        return True
+        return False
         pass
 
     def is_draw(self):
         # check if the board position is a draw
         # Feel free to implement this in anyway if needed
+      def is_draw(self):
+      return '0' not in self.board and not self.is_win()
         pass
 
     def get_valid_actions(self):
         # get the empty squares from the board
         # Feel free to implement this in anyway if needed
+       return [i for i, square in enumerate(self.board) if square == '0']
         pass
 
     def is_terminal_history(self):
         # check if the history is a terminal history
         # Feel free to implement this in anyway if needed
+    return self.is_win() or self.is_draw()
         pass
 
     def get_utility_given_terminal_history(self):
         # Feel free to implement this in anyway if needed
+      def get_utility_given_terminal_history(self):
+    if self.is_win():
+        winning_lines = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ]
+        for line in winning_lines:
+            a, b, c = line
+            if self.board[a] != '0' and self.board[a] == self.board[b] == self.board[c]:
+                return 1 if self.board[a] == 'x' else -1
+    return 0
         pass
 
     def update_history(self, action):
@@ -122,6 +153,43 @@ def backward_induction(history_obj):
     # actions. But since tictactoe is a PIEFG, there always exists an optimal deterministic strategy (SPNE). So your
     # policy will be something like this {"0": 1, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0} where
     # "0" was the one of the best actions for the current player/history.
+    strategy_dict_x = {}
+    strategy_dict_o = {}
+    
+    # Base case: terminal history, return the utility directly
+    if history.is_win() or history.is_draw():
+        return history.get_utility_given_terminal_history()
+    
+    # Recursive case: try all valid actions, pick the best one
+    current_player = history.player
+    
+    if current_player == 'x':
+        best_value = int('-2')  # X wants to MAXIMIZE utility
+    else:
+        best_value = int('2')   # O wants to MINIMIZE utility
+    
+    best_action = None
+    
+    for action in history.get_valid_actions():
+        next_history = history.update_history(action)
+        value = backward_induction(next_history)  # recurse first!
+        
+        if current_player == 'x':
+            if value > best_value:
+                best_value = value
+                best_action = action
+        else:
+            if value < best_value:
+                best_value = value
+                best_action = action
+    
+    # Record the best move for whoever's turn it is at this state
+    if current_player == 'x':
+        strategy_dict_x[tuple(history.history)] = best_action
+    else:
+        strategy_dict_o[tuple(history.history)] = best_action
+    
+    return best_value
     return -2
     # TODO implement
 
