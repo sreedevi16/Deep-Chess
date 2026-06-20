@@ -160,18 +160,35 @@ class History:
 
     def is_win(self):
         # Feel free to implement this in anyway if needed
+       return all(stat == 0 for stat in self.check_active_boards())
         pass
 
     def get_valid_actions(self):
         # Feel free to implement this in anyway if needed
+        valid_actions = []
+        for board_num in range(self.num_boards):
+            # Skip boards that already have a three-in-a-row (inactive boards)
+            if self.active_board_stats[board_num] == 0:
+                continue
+            board = self.boards[board_num]
+            for position in range(9):
+                if board[position] == '0':
+                    valid_actions.append(board_num * 9 + position)
+        return valid_actions
+      
         pass
 
     def is_terminal_history(self):
         # Feel free to implement this in anyway if needed
+      return self.is_win()
         pass
 
     def get_value_given_terminal_history(self):
         # Feel free to implement this in anyway if needed
+      if self.get_current_player == 1:
+        return 1
+        else
+        return -1
         pass
 
 
@@ -189,7 +206,37 @@ def alpha_beta_pruning(history_obj, alpha, beta, max_player_flag):
     # These two already given lines track the visited histories.
     global visited_histories_list
     visited_histories_list.append(history_obj.history)
+  
     # TODO implement
+    if history_obj.is_terminal_history():
+        return history_obj.get_value_given_terminal_history()
+       valid_actions = history_obj.get_valid_actions()
+      if max_player_flag:
+        value = -math.inf
+        for action in valid_actions:
+            child_history = history_obj.history + [action]
+            child = History(num_boards=history_obj.num_boards, history=child_history)
+            child_value = alpha_beta_pruning(child, alpha, beta, False)
+            value = max(value, child_value)
+            if value >= beta:
+                
+                return value
+            alpha = max(alpha, value)
+        return value
+    else:
+        value = math.inf
+        for action in valid_actions:
+            child_history = history_obj.history + [action]
+            child = History(num_boards=history_obj.num_boards, history=child_history)
+            child_value = alpha_beta_pruning(child, alpha, beta, True)
+            value = min(value, child_value)
+            if value <= alpha:
+                
+                return value
+            beta = min(beta, value)
+        return value
+ 
+  
     return -2
     # TODO implement
 
@@ -202,11 +249,42 @@ def maxmin(history_obj, max_player_flag):
     :param max_player_flag: True if the player is maximizing player
     :return: float
     """
+    
     # Global variable to keep track of visited board positions. This is a dictionary with keys as str version of
     # self.boards and value represents the maxmin value. Use the get_boards_str function in History class to get
     # the key corresponding to self.boards.
     global board_positions_val_dict
     # TODO implement
+   
+    boards_key = history_obj.get_boards_str()
+    if boards_key in board_positions_val_dict:
+        return board_positions_val_dict[board_key]
+ 
+    if history_obj.is_terminal_history():
+        value = history_obj.get_value_given_terminal_history()
+        board_positions_val_dict[board_key] = value
+        return value
+ 
+    valid_actions = history_obj.get_valid_actions()
+ 
+    if max_player_flag:
+        value = -math.inf
+        for action in valid_actions:
+            new_history = history_obj.history + [action]
+            new = History(num_boards=history_obj.num_boards, history=new_history)
+            new_value = maxmin(new, False)
+            value = max(value, new_value)
+    else:
+        value = math.inf
+        for action in valid_actions:
+            new_history = history_obj.history + [action]
+            new = History(num_boards=history_obj.num_boards, history=new_history)
+            new_value = maxmin(new, True)
+            value = min(value, new_value)
+ 
+    board_positions_val_dict[boards_key] = value
+    return value
+
     return -2
     # TODO implement
 
