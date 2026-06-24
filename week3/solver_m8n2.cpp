@@ -30,16 +30,16 @@ string findFirstMove(const string& fen) {
 
         bool allRepliesMated = true;
         Movelist blackMoves;
-        movegen::legalmoves(blackMoves, board);
+        movegen::legalmoves(blackMove, board);
 
-        for (const Move& move2 : blackMoves) {
+        for (const Move& move2 : blackMove) {
             board.makeMove(move2);
 
             bool foundMate = false;
             Movelist whiteMoves2;
-            movegen::legalmoves(whiteMoves2, board);
+            movegen::legalmoves(whiteMove2, board);
 
-            for (const Move& move3 : whiteMoves2) {
+            for (const Move& move3 : whiteMove2) {
                 board.makeMove(move3);
                 if (board.isCheckmate()) {
                     foundMate = true;
@@ -66,3 +66,4 @@ string findFirstMove(const string& fen) {
 
     return "none";
 }
+
