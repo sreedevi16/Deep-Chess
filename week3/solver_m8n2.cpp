@@ -1,63 +1,41 @@
 #include "chess-library/src/include.hpp"
-#include "nlohmann/json.hpp"
-#include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
-#include <map>
-
-using namespace std;        
+#include <sstream>
+#include <climits>
+using namespace std;
 using namespace chess;
-using json = nlohmann::json;
 
-string FirstMove(const string& fen) {
-Board board(fen);
-Movelist moves;
-movegen::legalmoves(moves, board);
-for (const Move& move1 : moves) {
-board.makeMove(move1);
-
-if (board.isCheckmate()) {
-board.unmakeMove(move1);
-return uci::moveToUci(move1);
+pair<int, Move> minimax(Board& board, int depth, bool max_player){
+                
+Movelist moves; 
+movegen::legalmoves(moves,board);
+if (board.inCheck() && moves.empty()) {
+return {max_player ? -100 : +100, Move()};
 }
-if (board.isGameOver().second != GameResult::NONE) {
-board.unmakeMove(move1);
-continue;
+if (depth == 0 || moves.empty()) {
+ return {0, Move()};
+}                   
+int bestScore = max_player ? INT_MIN : INT_MAX;
+Move bestMove = *moves.begin();
+for (const Move& move : moves) {
+ board.makeMove(move);
+auto [score, _] = minimax(board, depth - 1, !max_player);
+board.unmakeMove(move);
+if (max_player && score > bestScore) {
+bestScore = score;  
+bestMove  = move;
 }
-
-bool bool1 = true;
-Movelist blackMove;
-movegen::legalmoves(blackMove, board);
-
-for (const Move& move2 : blackMove) {
-board.makeMove(move2);
-bool bool2 = false;
-Movelist whiteMove2;
-movegen::legalmoves(whiteMove2, board);
-
-for (const Move& move3 : whiteMove2) {
-board.makeMove(move3);
-if (board.isCheckmate()) {
-bool2 = true;
-board.unmakeMove(move3);
-break;
+else if (!max_player && score < bestScore) {
+bestScore = score;
+  bestMove  = move;
 }
-board.unmakeMove(move3);
+}           
+return {bestScore, bestMove};
 }
-
-board.unmakeMove(move2);
-
-if (!bool2) {
-bool1 = false;
-break;
+int main(){
+  Board  board("fen");
+pair<int, Move> opt = minimax(board,3,true);
+cout<< uci::moveToUci(opt.second);
+board.makeMove(opt.second);
 }
-}
-board.unmakeMove(move1);
-if (bool1) {
-return uci::moveToUci(move1);
-}
-}
-return "none";
-}
-
